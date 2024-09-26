@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Text Extraction and Keyword Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>OCR Text Extraction and Keyword Search</h1>
+
+<input type="file" id="fileInput" accept="image/*">
+<button id="uploadBtn">Upload and Extract Text</button>
+
+<div id="results">
+    <h2>Extracted Text:</h2>
+    <pre id="extractedText"></pre>
+    
+    <h2>Keyword Search:</h2>
+    <input type="text" id="keywordInput" placeholder="Enter keyword">
+    <button id="searchBtn">Search</button>
+    <h3>Search Results:</h3>
+    <ul id="searchResults"></ul>
+</div>
+
+<script>
+    document.getElementById('uploadBtn').addEventListener('click', async () => {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert("Please upload an image.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch('/extract', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        
+        document.getElementById('extractedText').innerText = data.extracted_text;
+    });
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+        const text = document.getElementById('extractedText').innerText;
+        const keyword = document.getElementById('keywordInput').value.toLowerCase();
+        const results = text.split('\n').filter(line => line.toLowerCase().includes(keyword));
+        
+        const resultsContainer = document.getElementById('searchResults');
+        resultsContainer.innerHTML = '';
+        if (results.length) {
+            results.forEach(result => {
+                const li = document.createElement('li');
+                li.innerText = result;
+                resultsContainer.appendChild(li);
+            });
+        } else {
+            resultsContainer.innerHTML = '<li>No matches found.</li>';
+        }
+    });
+</script>
+
+</body>
+</html>
